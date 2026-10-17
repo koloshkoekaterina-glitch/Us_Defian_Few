@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full bg-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Us Defiant Few - Інтерактивна Галерея</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gothic: {
+                            bg: '#0a080d',
+                            card: '#130f1a',
+                            border: '#2a1b36',
+                            red: '#8b0000',
+                            crimson: '#dc143c',
+                            gold: '#d4af37',
+                            accent: '#ff2a55'
+                        }
+                    },
+                    fontFamily: {
+                        title: ['Cinzel', 'serif'],
+                        quote: ['Cormorant Garamond', 'serif'],
+                        sans: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Стилі для частинок пелюсток */
+        #petal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            background: linear-gradient(135deg, #8b0000 0%, #dc143c 50%, #4a0000 100%);
+            border-radius: 15px 0px 15px 0px;
+            opacity: 0.7;
+            pointer-events: none;
+            filter: drop-shadow(0 0 5px rgba(220, 20, 60, 0.5));
+            animation: fall linear infinite, sway ease-in-out infinite alternate;
+        }
+
+        @keyframes fall {
+            0% {
+                top: -10%;
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                top: 110%;
+                opacity: 0;
+            }
+        }
+
+        @keyframes sway {
+            0% {
+                transform: translateX(0px) rotate(0deg) scale(0.8);
+            }
+            100% {
+                transform: translateX(80px) rotate(360deg) scale(1.2);
+            }
+        }
+
+        /* Залізна брама - CSS та анімації */
+        .gate-door {
+            transition: transform 2.2s cubic-bezier(0.77, 0, 0.175, 1);
+            background: radial-gradient(circle at center, #1a1622 0%, #08060a 100%);
+        }
+
+        .gate-open-left {
+            transform: translateX(-100%);
+        }
+
+        .gate-open-right {
+            transform: translateX(100%);
+        }
+
+        /* Вручну розроблені грати залізних воріт */
+        .iron-bars {
+            background-image: 
+                repeating-linear-gradient(90deg, 
+                    #111 0px, #111 12px, 
+                    #222 12px, #222 16px, 
+                    #050505 16px, #050505 40px),
+                repeating-linear-gradient(0deg, 
+                    transparent 0px, transparent 150px, 
+                    #111 150px, #222 160px, transparent 160px);
+            box-shadow: inset 0 0 50px #000;
+        }
+
+        .iron-ornament {
+            border: 3px solid #3a2e39;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.9);
+        }
+
+        /* Неонове сяйво та ефекти карток */
+        .gothic-glow {
+            box-shadow: 0 0 25px rgba(139, 0, 0, 0.35);
+        }
+
+        .gothic-glow-hover:hover {
+            box-shadow: 0 0 35px rgba(220, 20, 60, 0.6), 0 0 10px rgba(255, 42, 85, 0.4);
+            border-color: rgba(220, 20, 60, 0.8);
+        }
+
+        /* 3D Ефект нахилу */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease-out, box-shadow 0.3s ease;
+        }
+
+        /* Стилі туману */
+        .fog-bg {
+            background: linear-gradient(to bottom, rgba(10,8,13,0.3), rgba(10,8,13,0.85));
+        }
+
+        /* Плавна поява */
+        .fade-in {
+            animation: fadeIn 1.2s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Кастомний скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a080d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3a1520;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b0000;
+        }
+    </style>
+</head>
+<body class="h-full text-gray-200 font-sans selection:bg-gothic-crimson selection:text-white overflow-x-hidden">
+
+    <!-- Анімований контейнер пелюсток -->
+    <div id="petal-container"></div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="min-h-screen flex flex-col justify-between relative bg-gothic-bg">
+
+        <!-- SCENE 1: ІНТЕРАКТИВНА БРАМА ТА ГОЛОВНЕ ВІДКРИТТЯ -->
+        <section id="gate-section" class="fixed inset-0 z-40 flex items-center justify-center overflow-hidden transition-opacity duration-1000">
+            
+            <!-- Залізна брама: Ліва частина -->
+            <div id="gate-left" class="gate-door absolute left-0 top-0 w-1/2 h-full z-30 border-r-4 border-red-950/80 flex flex-col justify-between items-end p-4 md:p-8">
+                <div class="w-full h-full iron-bars relative opacity-90 flex items-center justify-end">
+                    <!-- Залізні візерунки та ковані елементи -->
+                    <div class="w-24 md:w-48 h-24 md:h-48 rounded-full iron-ornament absolute right-2 border-amber-900/40 flex items-center justify-center">
+                        <div class="w-16 md:w-32 h-16 md:h-32 rounded-full border-2 border-red-900/60 transform rotate-45"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Залізна брама: Права частина -->
+            <div id="gate-right" class="gate-door absolute right-0 top-0 w-1/2 h-full z-30 border-l-4 border-red-950/80 flex flex-col justify-between items-start p-4 md:p-8">
+                <div class="w-full h-full iron-bars relative opacity-90 flex items-center justify-start">
+                    <!-- Залізні візерунки -->
+                    <div class="w-24 md:w-48 h-24 md:h-48 rounded-full iron-ornament absolute left-2 border-amber-900/40 flex items-center justify-center">
+                        <div class="w-16 md:w-32 h-16 md:h-32 rounded-full border-2 border-red-900/60 transform -rotate-45"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка "Відкрити браму" (поверх воріт) -->
+            <div id="gate-trigger-container" class="z-50 text-center px-4 transition-all duration-500 transform hover:scale-105">
+                <div class="bg-black/80 backdrop-blur-md p-8 rounded-2xl border border-red-900/50 shadow-2xl max-w-md mx-auto text-center gothic-glow">
+                    <span class="text-gothic-crimson tracking-widest text-xs uppercase font-semibold mb-2 block font-title">Тайни Темряви</span>
+                    <h2 class="text-2xl md:text-3xl font-title font-bold text-white mb-3 tracking-wide">US DEFIANT FEW</h2>
+                    <p class="text-xs md:text-sm text-gray-400 font-quote italic mb-6">«Ти була єдиною людиною, яка коли-небудь дарувала мені відчуття дому в темряві»</p>
+                    
+                    <button id="open-gate-btn" onclick="openGate()" class="group relative inline-flex items-center justify-center px-8 py-3.5 overflow-hidden font-title font-bold tracking-wider text-white bg-gradient-to-r from-red-950 via-gothic-red to-red-950 rounded-lg border border-red-500/30 hover:border-red-500 transition-all duration-300 shadow-lg hover:shadow-red-900/50">
+                        <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+                        <i class="fa-solid font-bold fa-key mr-3 text-gothic-crimson group-hover:text-white transition-colors"></i>
+                        <span>ВІДКРИТИ БРАМУ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Перша Картинка (Image 1) під брамою -->
+            <div id="hero-image-wrapper" class="absolute inset-0 z-10 flex items-center justify-center p-4 md:p-12 overflow-hidden bg-black">
+                <div class="absolute inset-0 bg-radial from-red-950/20 via-black/80 to-black z-10 pointer-events-none"></div>
+                <img id="img-1" src="photo_2026-10-17_18-21-54.jpg" alt="Us Defiant Few - Обкладинка" 
+                     class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl border border-red-900/40 transform scale-95 opacity-80 transition-all duration-1000 ease-out filter brightness-90 contrast-105">
+                
+                <!-- Плаваюча підказка для переходу до дошки після відкриття -->
+                <div id="scroll-prompt" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 text-center opacity-0 transition-opacity duration-1000">
+                    <button onclick="scrollToBoard()" class="flex flex-col items-center text-gray-400 hover:text-white transition-colors group">
+                        <span class="font-title text-xs uppercase tracking-widest mb-1 text-red-400/80 group-hover:text-red-400">Перейти до галереї</span>
+                        <i class="fa-solid fa-chevron-down animate-bounce text-lg text-gothic-crimson"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- HEADER / NAVIGATION (З'являється після відкриття воріт) -->
+        <header id="main-header" class="sticky top-0 z-30 bg-gothic-bg/90 backdrop-blur-md border-b border-red-950/60 px-6 py-4 flex justify-between items-center opacity-0 transition-opacity duration-700">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-book-journal-whills text-gothic-crimson text-xl"></i>
+                <span class="font-title text-lg font-bold tracking-wider text-white">US DEFIANT FEW</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="resetGate()" class="text-xs font-title tracking-widest text-gray-400 hover:text-gothic-crimson transition-colors flex items-center gap-2 border border-gray-800 hover:border-red-900 px-3 py-1.5 rounded-md">
+                    <i class="fa-solid fa-lock"></i>
+                    <span class="hidden sm:inline">ЗАКРИТИ БРАМУ</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCENE 2: ІНТЕРАКТИВНА ДОШКА З 3 КАРТИНКАМИ -->
+        <main id="board-section" class="relative z-20 container mx-auto px-4 py-12 md:py-20 flex-grow opacity-0 transition-all duration-1000">
+            
+            <!-- Заголовок дошки -->
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <div class="inline-flex items-center justify-center space-x-2 text-gothic-crimson mb-3">
+                    <span class="h-px w-8 bg-gothic-crimson/50"></span>
+                    <i class="fa-solid fa-feather-pointed text-sm"></i>
+                    <span class="h-px w-8 bg-gothic-crimson/50"></span>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-title font-bold text-white tracking-wide mb-4">ГАЛЕРЕЯ ТА ТРОПИ</h2>
+                <p class="text-gray-400 font-quote text-lg italic">Натисніть на картку, щоб зануритися в детальний перегляд та цитати</p>
+            </div>
+
+            <!-- ГРІД ДОШКИ (3 Картки) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 max-w-6xl mx-auto">
+                
+                <!-- CARD 1: Image 2 -->
+                <div class="tilt-card group relative bg-gothic-card rounded-xl overflow-hidden border border-gothic-border gothic-glow-hover transition-all duration-500 cursor-pointer flex flex-col"
+                     onclick="openLightbox('photo_2026-10-17_18-34-27.jpg', 'Що таке серце, якщо не порожнеча, сповнена любові?', 'Кадр I • Душевна відстань')">
+                    
+                    <div class="relative aspect-[3/4] overflow-hidden bg-black">
+                        <img src="photo_2026-10-17_18-34-27.jpg" alt="Кадр 1 - Що таке серце" 
+                             class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 filter brightness-90 group-hover:brightness-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gothic-card via-transparent to-transparent opacity-80"></div>
+                        
+                        <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-red-900/40 text-xs font-title text-red-400">
+                            <i class="fa-regular fa-eye mr-1"></i> Огляд
+                        </div>
+                    </div>
+
+                    <div class="p-6 flex-grow flex flex-col justify-between border-t border-red-950/40 bg-gradient-to-b from-gothic-card to-black">
+                        <div>
+                            <span class="text-xs font-title text-gothic-crimson tracking-widest uppercase block mb-1">Фрагмент I</span>
+                            <h3 class="text-xl font-title font-bold text-white group-hover:text-red-400 transition-colors mb-3">Порожнеча та Любов</h3>
+                            <p class="text-gray-300 font-quote text-base italic line-clamp-3">
+                                «Що таке серце, якщо не порожнеча, сповнена любові?»
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 font-title">
+                            <span>Натисніть для зуму</span>
+                            <i class="fa-solid fa-arrow-right text-gothic-crimson group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: Image 3 -->
+                <div class="tilt-card group relative bg-gothic-card rounded-xl overflow-hidden border border-gothic-border gothic-glow-hover transition-all duration-500 cursor-pointer flex flex-col"
+                     onclick="openLightbox('photo_2026-10-17_18-37-45.jpg', '«Мені не потрібно визнавати твоє існування, коли ти постійно існуєш в моїх думках під час безсоння».', 'Кадр II • Нічні Думки')">
+                    
+                    <div class="relative aspect-[3/4] overflow-hidden bg-black">
+                        <img src="photo_2026-10-17_18-37-45.jpg" alt="Кадр 2 - Безсоння" 
+                             class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 filter brightness-90 group-hover:brightness-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gothic-card via-transparent to-transparent opacity-80"></div>
+                        
+                        <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-red-900/40 text-xs font-title text-red-400">
+                            <i class="fa-regular fa-eye mr-1"></i> Огляд
+                        </div>
+                    </div>
+
+                    <div class="p-6 flex-grow flex flex-col justify-between border-t border-red-950/40 bg-gradient-to-b from-gothic-card to-black">
+                        <div>
+                            <span class="text-xs font-title text-gothic-crimson tracking-widest uppercase block mb-1">Фрагмент II</span>
+                            <h3 class="text-xl font-title font-bold text-white group-hover:text-red-400 transition-colors mb-3">Думки під час безсоння</h3>
+                            <p class="text-gray-300 font-quote text-base italic line-clamp-3">
+                                «Мені не потрібно визнавати твоє існування, коли ти постійно існуєш в моїх думках...»
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 font-title">
+                            <span>Натисніть для зуму</span>
+                            <i class="fa-solid fa-arrow-right text-gothic-crimson group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: Image 4 (Tropes) -->
+                <div class="tilt-card group relative bg-gothic-card rounded-xl overflow-hidden border border-gothic-border gothic-glow-hover transition-all duration-500 cursor-pointer flex flex-col"
+                     onclick="openLightbox('Готична обкладинка з тропами та червоними стрілками.png', 'Основні романтичні та сюжетні тропи книги: Вороги до коханців, Внутрішня боротьба, Вимушена близькість, Доторкнися до неї і помреш, Стародавні секрети, Знайдена родина.', 'Кадр III • Книжкові Тропи')">
+                    
+                    <div class="relative aspect-[3/4] overflow-hidden bg-black">
+                        <img src="Готична обкладинка з тропами та червоними стрілками.png" alt="Тропи книги Us Defiant Few" 
+                             class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 filter brightness-90 group-hover:brightness-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gothic-card via-transparent to-transparent opacity-80"></div>
+                        
+                        <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-red-900/40 text-xs font-title text-red-400">
+                            <i class="fa-regular fa-eye mr-1"></i> Огляд
+                        </div>
+                    </div>
+
+                    <div class="p-6 flex-grow flex flex-col justify-between border-t border-red-950/40 bg-gradient-to-b from-gothic-card to-black">
+                        <div>
+                            <span class="text-xs font-title text-gothic-crimson tracking-widest uppercase block mb-1">Фрагмент III</span>
+                            <h3 class="text-xl font-title font-bold text-white group-hover:text-red-400 transition-colors mb-3">Тропи Книги</h3>
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                <span class="bg-red-950/60 border border-red-800/40 text-red-300 text-[10px] font-title px-2 py-0.5 rounded">Вороги до коханців</span>
+                                <span class="bg-red-950/60 border border-red-800/40 text-red-300 text-[10px] font-title px-2 py-0.5 rounded">Вимушена близькість</span>
+                                <span class="bg-red-950/60 border border-red-800/40 text-red-300 text-[10px] font-title px-2 py-0.5 rounded">+4 тропи</span>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 font-title">
+                            <span>Переглянути всі тропи</span>
+                            <i class="fa-solid fa-arrow-right text-gothic-crimson group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="relative z-20 border-t border-red-950/40 py-8 px-4 text-center text-xs text-gray-600 font-title">
+            <p>© Alexis Patton • Us Defiant Few</p>
+            <p class="mt-1 text-gray-700">Інтерактивна презентація розроблена в готичному стилі</p>
+        </footer>
+
+    </div>
+
+    <!-- MODAL / LIGHTBOX (Для повноекранного перегляду картинок) -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4 md:p-8">
+        
+        <!-- Кнопка закриття -->
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-gray-400 hover:text-white text-3xl z-50 p-2 transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="max-w-5xl w-full max-h-[90vh] flex flex-col md:flex-row items-center justify-center gap-6 bg-gothic-card/80 border border-red-900/40 rounded-2xl p-4 md:p-6 shadow-2xl overflow-y-auto">
+            
+            <!-- Зображення у модальному вікні -->
+            <div class="w-full md:w-2/3 flex items-center justify-center overflow-hidden rounded-lg bg-black">
+                <img id="lightbox-img" src="" alt="Детальний перегляд" class="max-h-[75vh] w-auto object-contain rounded-md">
+            </div>
+
+            <!-- Текст та інформація -->
+            <div class="w-full md:w-1/3 flex flex-col justify-between text-left p-2">
+                <div>
+                    <span id="lightbox-tag" class="text-xs font-title text-gothic-crimson tracking-widest uppercase block mb-2">Кадр</span>
+                    <h3 id="lightbox-title" class="text-2xl font-title font-bold text-white mb-4">Назва</h3>
+                    <div class="w-12 h-0.5 bg-gothic-crimson mb-6"></div>
+                    
+                    <p id="lightbox-quote" class="text-gray-200 font-quote text-lg md:text-xl italic leading-relaxed bg-black/40 p-4 rounded-lg border-l-2 border-gothic-crimson">
+                        Цитата...
+                    </p>
+                </div>
+
+                <div class="mt-8 pt-4 border-t border-gray-800 flex justify-between items-center">
+                    <span class="text-xs font-title text-gray-500">Us Defiant Few</span>
+                    <button onclick="closeLightbox()" class="px-4 py-2 bg-red-950/80 hover:bg-gothic-red text-white text-xs font-title rounded-lg transition-colors border border-red-800/50">
+                        Закрити
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Елементи DOM
+        const gateLeft = document.getElementById('gate-left');
+        const gateRight = document.getElementById('gate-right');
+        const gateTrigger = document.getElementById('gate-trigger-container');
+        const gateSection = document.getElementById('gate-section');
+        const heroImg = document.getElementById('img-1');
+        const scrollPrompt = document.getElementById('scroll-prompt');
+        const mainHeader = document.getElementById('main-header');
+        const boardSection = document.getElementById('board-section');
+
+        // Модальне вікно
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxQuote = document.getElementById('lightbox-quote');
+        const lightboxTag = document.getElementById('lightbox-tag');
+
+        // Функція відкриття залізної брами
+        function openGate() {
+            // Ховаємо кнопку входу
+            gateTrigger.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+            
+            // Відкриваємо стулки воріт
+            setTimeout(() => {
+                gateLeft.classList.add('gate-open-left');
+                gateRight.classList.add('gate-open-right');
+                
+                // Проявляємо головне зображення та робимо його яскравішим
+                heroImg.classList.remove('scale-95', 'opacity-80', 'brightness-90');
+                heroImg.classList.add('scale-100', 'opacity-100', 'brightness-100', 'gothic-glow');
+            }, 300);
+
+            // Показываємо підказку скролу та дошку
+            setTimeout(() => {
+                scrollPrompt.classList.remove('opacity-0');
+                mainHeader.classList.remove('opacity-0');
+                boardSection.classList.remove('opacity-0');
+            }, 1800);
+        }
+
+        // Перехід від головного екрану до дошки з картками
+        function scrollToBoard() {
+            // Плавне зміщення секції брами
+            gateSection.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                gateSection.style.display = 'none';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 800);
+        }
+
+        // Скидання воріт (Закрити браму)
+        function resetGate() {
+            gateSection.style.display = 'flex';
+            setTimeout(() => {
+                gateSection.classList.remove('opacity-0', 'pointer-events-none');
+                gateLeft.classList.remove('gate-open-left');
+                gateRight.classList.remove('gate-open-right');
+                gateTrigger.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+                scrollPrompt.classList.add('opacity-0');
+                
+                heroImg.classList.add('scale-95', 'opacity-80', 'brightness-90');
+                heroImg.classList.remove('scale-100', 'opacity-100', 'brightness-100', 'gothic-glow');
+            }, 50);
+        }
+
+        // Відкриття лайтбоксу
+        function openLightbox(imgSrc, quoteText, tagText) {
+            lightboxImg.src = imgSrc;
+            lightboxQuote.innerText = quoteText;
+            lightboxTag.innerText = tagText || "Галерея";
+            
+            lightbox.classList.remove('hidden');
+            setTimeout(() => {
+                lightbox.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        // Закриття лайтбоксу
+        function closeLightbox() {
+            lightbox.classList.add('opacity-0');
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+            }, 300);
+        }
+
+        // Генерація анімованих падаючих пелюсток
+        function createPetals() {
+            const container = document.getElementById('petal-container');
+            const petalCount = 25; // Кількість пелюсток
+
+            for (let i = 0; i < petalCount; i++) {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+                
+                // Рандомізація розмірів, позиції та анімації
+                const size = Math.random() * 12 + 8; // 8px - 20px
+                const left = Math.random() * 100; // 0% - 100%
+                const duration = Math.random() * 8 + 6; // 6s - 14s
+                const delay = Math.random() * 10; // 0s - 10s
+
+                petal.style.width = `${size}px`;
+                petal.style.height = `${size * 1.4}px`;
+                petal.style.left = `${left}%`;
+                petal.style.animationDuration = `${duration}s, ${duration / 2}s`;
+                petal.style.animationDelay = `${delay}s, ${delay}s`;
+
+                container.appendChild(petal);
+            }
+        }
+
+        // 3D Tilt Effect для карток
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 15;
+                const rotateY = (centerX - x) / 15;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        });
+
+        // Ініціалізація при завантаженні
+        window.addEventListener('DOMContentLoaded', () => {
+            createPetals();
+        });
+    </script>
+</body>
+</html>
